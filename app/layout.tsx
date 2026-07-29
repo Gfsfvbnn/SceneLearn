@@ -1,7 +1,18 @@
 import Navbar from "./Navbar";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Inter, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-display",
+});
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-body",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +39,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-  <Navbar />
-  {children}
-</body>
+      <body
+        className={`${beVietnamPro.variable} ${inter.variable} min-h-full flex flex-col font-body`}
+      >
+        <Navbar />
+        {children}
+      </body>
     </html>
   );
 }
