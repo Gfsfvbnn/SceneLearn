@@ -115,7 +115,7 @@ export default function WatchPage() {
             onClick={handleLoadVideo}
             disabled={loading}
             className="px-6 py-3 text-white rounded-lg font-medium disabled:opacity-50"
-            style={{ backgroundColor: "var(--color-cyan)" }}
+            style={{ backgroundColor: "#1CA7EC", color: "#FFFFFF" }}
           >
             {loading ? "Dang tai..." : "Tai video"}
           </button>
