@@ -48,6 +48,11 @@ export default function Navbar() {
             </Link>
           )}
           {isLoggedIn && (
+            <Link href="/speaking" className="text-zinc-600 hover:text-blue-600">
+              Luyen noi
+            </Link>
+          )}
+          {isLoggedIn && (
             <Link href="/progress" className="text-zinc-600 hover:text-blue-600">
               Tien do
             </Link>
