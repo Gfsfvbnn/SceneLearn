@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -54,4 +53,16 @@ export default function Navbar() {
             </Link>
           )}
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="text-red-600
+            <button onClick={handleLogout} className="text-red-600 hover:underline">
+              Dang xuat
+            </button>
+          ) : (
+            <Link href="/login" className="text-blue-600 font-medium hover:underline">
+              Dang nhap
+            </Link>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
+}
