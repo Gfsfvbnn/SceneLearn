@@ -99,7 +99,7 @@ export default function Home() {
             onClick={handleGenerate}
             disabled={loading}
             className="w-full text-white py-3 rounded-lg font-medium disabled:opacity-50 transition"
-            style={{ backgroundColor: "var(--color-cyan)" }}
+            style={{ backgroundColor: "#1CA7EC", color: "#FFFFFF" }}
           >
             {loading ? "Đang tạo bài học..." : "Tạo bài học"}
           </button>
