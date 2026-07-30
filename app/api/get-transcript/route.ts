@@ -5,88 +5,52 @@ function getVideoId(url: string): string | null {
   return match ? match[1] : null;
 }
 
-function extractPlayerResponse(html: string): any {
-  const startMarker = "ytInitialPlayerResponse = ";
-  const startIdx = html.indexOf(startMarker);
-  if (startIdx === -1) return null;
-
-  const jsonStart = startIdx + startMarker.length;
-
-  let depth = 0;
-  let endIdx = -1;
-  let inString = false;
-  let escapeNext = false;
-
-  for (let i = jsonStart; i < html.length; i++) {
-    const char = html[i];
-
-    if (escapeNext) {
-      escapeNext = false;
-      continue;
-    }
-
-    if (char === "\\") {
-      escapeNext = true;
-      continue;
-    }
-
-    if (char === '"') {
-      inString = !inString;
-      continue;
-    }
-
-    if (inString) continue;
-
-    if (char === "{") depth++;
-    if (char === "}") {
-      depth--;
-      if (depth === 0) {
-        endIdx = i + 1;
-        break;
-      }
-    }
-  }
-
-  if (endIdx === -1) return null;
-
-  const jsonStr = html.slice(jsonStart, endIdx);
-  return JSON.parse(jsonStr);
-}
-
 async function fetchTranscript(videoId: string) {
   const headers = {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-    Cookie: "CONSENT=YES+cb.20210328-17-p0.en+FX+299",
   };
 
-  const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers });
-  const pageHtml = await pageRes.text();
+  // Buoc 1: lay danh sach cac phu de kha dung cho video nay
+  const listRes = await fetch(
+    `https://video.google.com/timedtext?type=list&v=${videoId}`,
+    { headers }
+  );
+  const listXml = await listRes.text();
 
-  const playerResponse = extractPlayerResponse(pageHtml);
+  console.log("DEBUG - list XML (200 ky tu dau):", listXml.slice(0, 200));
 
-  if (!playerResponse) {
-    throw new Error("Khong doc duoc du lieu video. YouTube co the da doi cau truc trang.");
-  }
-
-  console.log("DEBUG - Co truong captions khong:", !!playerResponse?.captions);
-  console.log("DEBUG - videoDetails title:", playerResponse?.videoDetails?.title);
-
-  const captionTracks =
-    playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
-
-  if (!captionTracks || captionTracks.length === 0) {
+  if (!listXml || listXml.length < 10) {
     throw new Error("Video nay khong co phu de kha dung.");
   }
 
-  const englishTrack =
-    captionTracks.find((t: any) => t.languageCode === "en") || captionTracks[0];
+  // Tim track tieng Anh, uu tien khong phai auto-generated
+  const trackMatches = [...listXml.matchAll(/<track[^>]*lang_code="([a-z-]+)"[^>]*\/?>/g)];
 
-  const transcriptRes = await fetch(englishTrack.baseUrl, { headers });
+  console.log("DEBUG - so track tim duoc:", trackMatches.length);
+  console.log("DEBUG - cac lang_code:", trackMatches.map((m) => m[1]).join(", "));
+
+  const englishMatch =
+    trackMatches.find((m) => m[1] === "en") || trackMatches[0];
+
+  if (!englishMatch) {
+    throw new Error("Video nay khong co phu de kha dung.");
+  }
+
+  const langCode = englishMatch[1];
+
+  // Buoc 2: lay noi dung phu de that
+  const transcriptRes = await fetch(
+    `https://video.google.com/timedtext?lang=${langCode}&v=${videoId}`,
+    { headers }
+  );
   const transcriptXml = await transcriptRes.text();
 
   const lines = [...transcriptXml.matchAll(/<text start="([\d.]+)"[^>]*>([^<]*)<\/text>/g)];
+
+  if (lines.length === 0) {
+    throw new Error("Khong doc duoc noi dung phu de.");
+  }
 
   const transcript = lines.map((line) => ({
     offset: parseFloat(line[1]),
