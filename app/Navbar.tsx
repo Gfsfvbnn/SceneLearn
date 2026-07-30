@@ -39,7 +39,7 @@ export default function Navbar() {
           <Link href="/writing" className="text-zinc-600 hover:text-blue-600">
             Writing
           </Link>
-          <Link href="/watch" className="text-zinc-600 hover:text-blue-600">
+          <Link href="/learn" className="text-zinc-600 hover:text-blue-600">
             Xem YouTube
           </Link>
           {isLoggedIn && (
