@@ -5,6 +5,54 @@ function getVideoId(url: string): string | null {
   return match ? match[1] : null;
 }
 
+function extractPlayerResponse(html: string): any {
+  const startMarker = "ytInitialPlayerResponse = ";
+  const startIdx = html.indexOf(startMarker);
+  if (startIdx === -1) return null;
+
+  const jsonStart = startIdx + startMarker.length;
+
+  let depth = 0;
+  let endIdx = -1;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = jsonStart; i < html.length; i++) {
+    const char = html[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (char === "{") depth++;
+    if (char === "}") {
+      depth--;
+      if (depth === 0) {
+        endIdx = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (endIdx === -1) return null;
+
+  const jsonStr = html.slice(jsonStart, endIdx);
+  return JSON.parse(jsonStr);
+}
+
 async function fetchTranscript(videoId: string) {
   const headers = {
     "User-Agent":
@@ -16,31 +64,14 @@ async function fetchTranscript(videoId: string) {
   const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers });
   const pageHtml = await pageRes.text();
 
-  const playerResponseMatch = pageHtml.match(
-    /ytInitialPlayerResponse\s*=\s*(\{.+?\});(?:\s*var|\s*<\/script>)/
-  );
+  const playerResponse = extractPlayerResponse(pageHtml);
 
-  if (!playerResponseMatch) {
+  if (!playerResponse) {
     throw new Error("Khong doc duoc du lieu video. YouTube co the da doi cau truc trang.");
   }
 
-  let playerResponse;
-  try {
-    playerResponse = JSON.parse(playerResponseMatch[1]);
-  } catch {
-    throw new Error("Loi khi doc du lieu video.");
-  }
-
   console.log("DEBUG - Co truong captions khong:", !!playerResponse?.captions);
-  console.log(
-    "DEBUG - Co truong playerCaptionsTracklistRenderer khong:",
-    !!playerResponse?.captions?.playerCaptionsTracklistRenderer
-  );
-  console.log(
-    "DEBUG - Noi dung captions (neu co):",
-    JSON.stringify(playerResponse?.captions).slice(0, 500)
-  );
-  console.log("DEBUG - playabilityStatus:", JSON.stringify(playerResponse?.playabilityStatus));
+  console.log("DEBUG - videoDetails title:", playerResponse?.videoDetails?.title);
 
   const captionTracks =
     playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
