@@ -26,44 +26,58 @@ export default function SpeakingPage() {
   const [grading, setGrading] = useState(false);
   const [error, setError] = useState("");
 
+  const [wordList, setWordList] = useState<WordItem[]>([]);
+  const [showWordPicker, setShowWordPicker] = useState(false);
+
   const recognitionRef = useRef<any>(null);
 
-  const loadNewQuestion = async () => {
+  const loadWordList = async () => {
+    setLoading(true);
+    setError("");
+    setQuestion("");
+    setResult(null);
+    setSpokenText("");
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setError("Ban can dang nhap de dung tinh nang nay");
+      setLoading(false);
+      return;
+    }
+
+    const { data: words } = await supabase
+      .from("looked_up_words")
+      .select("word, meaning")
+      .eq("user_id", user.id);
+
+    if (!words || words.length === 0) {
+      setError("Ban chua co tu vung nao. Hay luu vai tu tren trang chu hoac YouTube truoc nhe!");
+      setLoading(false);
+      return;
+    }
+
+    setWordList(words);
+    setShowWordPicker(true);
+    setLoading(false);
+  };
+
+  const generateQuestionForWord = async (wordItem: WordItem) => {
+    setShowWordPicker(false);
     setLoading(true);
     setError("");
     setResult(null);
     setSpokenText("");
     setQuestion("");
+    setCurrentWord(wordItem);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setError("Ban can dang nhap de dung tinh nang nay");
-        setLoading(false);
-        return;
-      }
-
-      const { data: words } = await supabase
-        .from("looked_up_words")
-        .select("word, meaning")
-        .eq("user_id", user.id);
-
-      if (!words || words.length === 0) {
-        setError("Ban chua co tu vung nao. Hay tra vai tu tren trang chu hoac YouTube truoc nhe!");
-        setLoading(false);
-        return;
-      }
-
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      setCurrentWord(randomWord);
-
       const res = await fetch("/api/speaking-question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word: randomWord.word, meaning: randomWord.meaning }),
+        body: JSON.stringify({ word: wordItem.word, meaning: wordItem.meaning }),
       });
 
       const data = await res.json();
@@ -143,22 +157,48 @@ export default function SpeakingPage() {
           Luyen noi voi tu vung cua ban
         </h1>
         <p className="text-center mb-8" style={{ color: "#5C6B84" }}>
-          AI tao cau hoi tu chinh nhung tu ban da hoc, ban tra loi bang giong noi
+          Chon 1 tu ban da hoc, AI tao cau hoi, ban tra loi bang giong noi
         </p>
 
-        {!question && !loading && (
+        {!question && !loading && !showWordPicker && (
           <button
-            onClick={loadNewQuestion}
+            onClick={loadWordList}
             className="w-full py-3 rounded-lg font-medium"
             style={{ backgroundColor: "#1CA7EC", color: "#FFFFFF" }}
           >
-            Bat dau luyen noi
+            Chon tu de luyen noi
           </button>
         )}
 
-        {loading && <p className="text-center" style={{ color: "#5C6B84" }}>Dang tao cau hoi...</p>}
+        {loading && (
+          <p className="text-center" style={{ color: "#5C6B84" }}>
+            Dang tai...
+          </p>
+        )}
 
         {error && <p className="text-red-600 text-center mt-4">{error}</p>}
+
+        {showWordPicker && (
+          <div className="space-y-2">
+            <p className="text-sm mb-2" style={{ color: "#5C6B84" }}>
+              Chon 1 tu ban muon luyen:
+            </p>
+            {wordList.map((w, i) => (
+              <button
+                key={i}
+                onClick={() => generateQuestionForWord(w)}
+                className="w-full text-left p-3 bg-white border border-zinc-200 rounded-lg hover:bg-blue-50"
+              >
+                <span className="font-bold" style={{ color: "#1CA7EC" }}>
+                  {w.word}
+                </span>
+                <span className="text-sm ml-2" style={{ color: "#5C6B84" }}>
+                  {w.meaning}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {question && currentWord && (
           <div className="space-y-4">
@@ -209,7 +249,10 @@ export default function SpeakingPage() {
                   <p className="text-4xl font-bold" style={{ color: "#1CA7EC" }}>
                     {result.score}/10
                   </p>
-                  <p className="text-sm mt-1" style={{ color: result.usedWordCorrectly ? "#3AAFA9" : "#FF6B5B" }}>
+                  <p
+                    className="text-sm mt-1"
+                    style={{ color: result.usedWordCorrectly ? "#3AAFA9" : "#FF6B5B" }}
+                  >
                     {result.usedWordCorrectly ? "Da dung dung tu vung" : "Chua dung tu vung nay"}
                   </p>
                 </div>
@@ -231,11 +274,11 @@ export default function SpeakingPage() {
                 </div>
 
                 <button
-                  onClick={loadNewQuestion}
+                  onClick={loadWordList}
                   className="w-full py-3 rounded-lg font-medium"
                   style={{ backgroundColor: "#1CA7EC", color: "#FFFFFF" }}
                 >
-                  Cau tiep theo
+                  Chon tu khac
                 </button>
               </div>
             )}

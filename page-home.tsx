@@ -166,8 +166,9 @@ export default function Home() {
                             onClick={() => speakWord(item.word)}
                             className="ml-1 text-sm"
                             style={{ color: "#1CA7EC" }}
+                            title="Nghe phat am"
                           >
-                            Nghe
+                            🔊
                           </button>
                         </div>
                         <button
@@ -192,8 +193,9 @@ export default function Home() {
                           onClick={() => speakWord(item.example)}
                           className="text-sm"
                           style={{ color: "#1CA7EC" }}
+                          title="Nghe cau vi du"
                         >
-                          Nghe
+                          🔊
                         </button>
                       </div>
                     </div>
