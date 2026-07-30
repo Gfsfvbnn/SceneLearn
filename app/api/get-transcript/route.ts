@@ -7,10 +7,11 @@ function getVideoId(url: string): string | null {
 
 async function fetchTranscript(videoId: string) {
   const headers = {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-  };
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Accept-Language": "en-US,en;q=0.9",
+  Cookie: "CONSENT=YES+cb.20210328-17-p0.en+FX+299",
+};
 
   // Buoc 1: tai trang video de tim link phu de
   const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, { headers });
