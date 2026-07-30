@@ -77,94 +77,123 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col items-center py-16 px-4">
-      <div className="w-full max-w-2xl">
-        <h1 className="text-3xl font-bold text-center mb-2">SceneLearn</h1>
-        <p className="text-center text-zinc-600 mb-8">
-          Dán vào một đoạn văn bản, AI sẽ tạo bài học từ vựng cho bạn
-        </p>
+    <div className="min-h-screen dot-grid flex flex-col items-center py-16 px-4">
+      <div className="decorative-bg w-full max-w-2xl">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold text-center mb-2" style={{ color: "var(--color-ink)" }}>
+            SceneLearn
+          </h1>
+          <p className="text-center mb-8" style={{ color: "var(--color-muted)" }}>
+            Dán vào một đoạn văn bản, AI sẽ tạo bài học từ vựng cho bạn
+          </p>
 
-        <textarea
-          className="w-full h-40 p-4 border border-zinc-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Dán đoạn văn bản tiếng Anh vào đây..."
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-        />
+          <textarea
+            className="w-full h-40 p-4 border border-zinc-300 rounded-lg mb-4 focus:outline-none focus:ring-2 bg-white"
+            style={{ borderColor: "#D6E4F0" }}
+            placeholder="Dán đoạn văn bản tiếng Anh vào đây..."
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+          />
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Đang tạo bài học..." : "Tạo bài học"}
-        </button>
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="w-full text-white py-3 rounded-lg font-medium disabled:opacity-50 transition"
+            style={{ backgroundColor: "var(--color-cyan)" }}
+          >
+            {loading ? "Đang tạo bài học..." : "Tạo bài học"}
+          </button>
 
-        {error && <p className="mt-4 text-red-600">{error}</p>}
+          {error && <p className="mt-4 text-red-600">{error}</p>}
 
-        {vocabulary.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-3">Từ vựng</h2>
-            <div className="space-y-3">
-              {vocabulary.map((item, i) => (
-                <div key={i} className="p-4 bg-white border border-zinc-200 rounded-lg">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-bold text-blue-700">{item.word}</span>
-                    <span className="text-sm text-zinc-500">({item.partOfSpeech})</span>
-                  </div>
-                  <p className="text-zinc-700">{item.meaning}</p>
-                  <p className="text-zinc-500 italic mt-1">{item.example}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {debateQuestion && (
-          <div className="mt-8">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-              <h2 className="text-xl font-semibold mb-2">Câu hỏi tranh luận</h2>
-              <p className="text-zinc-700">{debateQuestion}</p>
-            </div>
-
-            <div className="border border-zinc-200 rounded-lg bg-white">
-              <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
-                {chatMessages.length === 0 && (
-                  <p className="text-zinc-400 text-sm">Trả lời câu hỏi trên để bắt đầu tranh luận với AI...</p>
-                )}
-                {chatMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
-                        msg.role === "user" ? "bg-blue-600 text-white" : "bg-zinc-100 text-zinc-800"
-                      }`}
-                    >
-                      {msg.content}
+          {vocabulary.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-3" style={{ color: "var(--color-ink)" }}>
+                Từ vựng
+              </h2>
+              <div className="space-y-3">
+                {vocabulary.map((item, i) => (
+                  <div key={i} className="scene-frame p-4 bg-white">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-bold" style={{ color: "var(--color-cyan)" }}>
+                        {item.word}
+                      </span>
+                      <span className="text-sm" style={{ color: "var(--color-muted)" }}>
+                        ({item.partOfSpeech})
+                      </span>
                     </div>
+                    <p style={{ color: "var(--color-ink)" }}>{item.meaning}</p>
+                    <p className="italic mt-1" style={{ color: "var(--color-muted)" }}>
+                      {item.example}
+                    </p>
                   </div>
                 ))}
-                {chatLoading && <p className="text-zinc-400 text-sm">AI đang suy nghĩ...</p>}
-              </div>
-
-              <div className="flex border-t border-zinc-200 p-2">
-                <input
-                  type="text"
-                  className="flex-1 px-3 py-2 focus:outline-none"
-                  placeholder="Nhập câu trả lời của bạn bằng tiếng Anh..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-                />
-                <button
-                  onClick={handleSendChat}
-                  disabled={chatLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg ml-2 disabled:opacity-50"
-                >
-                  Gửi
-                </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {debateQuestion && (
+            <div className="mt-8">
+              <div
+                className="scene-frame p-4 mb-4"
+                style={{ backgroundColor: "rgba(28, 167, 236, 0.08)" }}
+              >
+                <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--color-ink)" }}>
+                  Câu hỏi tranh luận
+                </h2>
+                <p style={{ color: "var(--color-ink)" }}>{debateQuestion}</p>
+              </div>
+
+              <div className="border border-zinc-200 rounded-lg bg-white">
+                <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
+                  {chatMessages.length === 0 && (
+                    <p className="text-sm" style={{ color: "var(--color-muted)" }}>
+                      Trả lời câu hỏi trên để bắt đầu tranh luận với AI...
+                    </p>
+                  )}
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className="max-w-[80%] px-3 py-2 rounded-lg text-sm"
+                        style={
+                          msg.role === "user"
+                            ? { backgroundColor: "var(--color-cyan)", color: "white" }
+                            : { backgroundColor: "#EEF3F8", color: "var(--color-ink)" }
+                        }
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <p className="text-sm" style={{ color: "var(--color-muted)" }}>
+                      AI đang suy nghĩ...
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex border-t border-zinc-200 p-2">
+                  <input
+                    type="text"
+                    className="flex-1 px-3 py-2 focus:outline-none"
+                    placeholder="Nhập câu trả lời của bạn bằng tiếng Anh..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+                  />
+                  <button
+                    onClick={handleSendChat}
+                    disabled={chatLoading}
+                    className="px-4 py-2 text-white rounded-lg ml-2 disabled:opacity-50"
+                    style={{ backgroundColor: "var(--color-cyan)" }}
+                  >
+                    Gửi
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

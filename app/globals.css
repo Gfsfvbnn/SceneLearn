@@ -24,3 +24,36 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.decorative-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.decorative-bg::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(28, 167, 236, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.decorative-bg::after {
+  content: "";
+  position: absolute;
+  bottom: -150px;
+  left: -120px;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(255, 107, 91, 0.14) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.dot-grid {
+  background-image: radial-gradient(circle, #D6E4F0 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+}
