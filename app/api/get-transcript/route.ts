@@ -31,6 +31,17 @@ async function fetchTranscript(videoId: string) {
     throw new Error("Loi khi doc du lieu video.");
   }
 
+  console.log("DEBUG - Co truong captions khong:", !!playerResponse?.captions);
+  console.log(
+    "DEBUG - Co truong playerCaptionsTracklistRenderer khong:",
+    !!playerResponse?.captions?.playerCaptionsTracklistRenderer
+  );
+  console.log(
+    "DEBUG - Noi dung captions (neu co):",
+    JSON.stringify(playerResponse?.captions).slice(0, 500)
+  );
+  console.log("DEBUG - playabilityStatus:", JSON.stringify(playerResponse?.playabilityStatus));
+
   const captionTracks =
     playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
