@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -28,33 +29,29 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-white border-b border-zinc-200 px-4 py-3">
-      <div className="max-w-2xl mx-auto flex items-center justify-between">
+      <div className="max-w-2xl mx-auto flex items-center justify-between flex-wrap gap-2">
         <Link href="/" className="font-bold text-lg text-blue-700">
           SceneLearn
         </Link>
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm flex-wrap">
           <Link href="/" className="text-zinc-600 hover:text-blue-600">
-            Từ vựng
+            Tu vung
           </Link>
           <Link href="/writing" className="text-zinc-600 hover:text-blue-600">
             Writing
           </Link>
+          <Link href="/watch" className="text-zinc-600 hover:text-blue-600">
+            Xem YouTube
+          </Link>
+          {isLoggedIn && (
+            <Link href="/vocabulary" className="text-zinc-600 hover:text-blue-600">
+              Tu da tra
+            </Link>
+          )}
           {isLoggedIn && (
             <Link href="/progress" className="text-zinc-600 hover:text-blue-600">
-              Tiến độ
+              Tien do
             </Link>
           )}
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="text-red-600 hover:underline">
-              Đăng xuất
-            </button>
-          ) : (
-            <Link href="/login" className="text-blue-600 font-medium hover:underline">
-              Đăng nhập
-            </Link>
-          )}
-        </div>
-      </div>
-    </nav>
-  );
-}
+            <button onClick={handleLogout} className="text-red-600
