@@ -90,7 +90,7 @@ async function fetchTranscript(videoId: string) {
 
   const lines = [...transcriptXml.matchAll(/<text start="([\d.]+)"[^>]*>([^<]*)<\/text>/g)];
 
-  return lines.map((line) => ({
+  const transcript = lines.map((line) => ({
     offset: parseFloat(line[1]),
     text: line[2]
       .replace(/&amp;/g, "&")
@@ -98,6 +98,10 @@ async function fetchTranscript(videoId: string) {
       .replace(/&quot;/g, '"')
       .replace(/&apos;/g, "'"),
   }));
+
+  const duration = parseInt(playerResponse?.videoDetails?.lengthSeconds || "0", 10);
+
+  return { transcript, duration };
 }
 
 export async function POST(request: Request) {
@@ -113,12 +117,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Link khong hop le" }, { status: 400 });
     }
 
-    const transcript = await fetchTranscript(videoId);
+    const { transcript, duration } = await fetchTranscript(videoId);
 
     const { error } = await supabaseAdmin.from("curated_videos").insert({
       title,
       youtube_id: videoId,
       transcript,
+      duration,
     });
 
     if (error) throw error;

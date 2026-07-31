@@ -24,6 +24,7 @@ export default function LearnDetailPage() {
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
   const [selectedWord, setSelectedWord] = useState<WordInfo | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
+  const [wordSaved, setWordSaved] = useState(false);
 
   useEffect(() => {
     supabase
@@ -46,20 +47,13 @@ export default function LearnDetailPage() {
 
     setLookupLoading(true);
     setSelectedWord(null);
+    setWordSaved(false);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       const res = await fetch("/api/lookup-word", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          word: cleanWord,
-          email: user?.email || null,
-          sourceVideo: "https://youtube.com/watch?v=" + youtubeId,
-        }),
+        body: JSON.stringify({ word: cleanWord }),
       });
 
       const data = await res.json();
@@ -68,6 +62,32 @@ export default function LearnDetailPage() {
       // im lang
     } finally {
       setLookupLoading(false);
+    }
+  };
+
+  const handleSaveWord = async () => {
+    if (!selectedWord) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      alert("Ban can dang nhap de luu tu vung");
+      return;
+    }
+
+    const { error } = await supabase.from("looked_up_words").insert({
+      user_id: user.id,
+      word: selectedWord.word,
+      meaning: selectedWord.meaning,
+      part_of_speech: selectedWord.partOfSpeech,
+      example: selectedWord.example,
+      source_video: "https://youtube.com/watch?v=" + youtubeId,
+    });
+
+    if (!error) {
+      setWordSaved(true);
     }
   };
 
@@ -80,8 +100,8 @@ export default function LearnDetailPage() {
         <h1 className="text-2xl font-bold mb-4" style={{ color: "#10233F" }}>
           {title}
         </h1>
-<a
-    
+
+        <a
           href={"https://youtube.com/watch?v=" + youtubeId}
           target="_blank"
           rel="noreferrer"
@@ -101,13 +121,27 @@ export default function LearnDetailPage() {
 
             {selectedWord && (
               <div className="scene-frame p-4 bg-white mt-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-bold" style={{ color: "#1CA7EC" }}>
-                    {selectedWord.word}
-                  </span>
-                  <span className="text-sm" style={{ color: "#5C6B84" }}>
-                    ({selectedWord.partOfSpeech})
-                  </span>
+                <div className="flex items-baseline gap-2 justify-between">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-bold" style={{ color: "#1CA7EC" }}>
+                      {selectedWord.word}
+                    </span>
+                    <span className="text-sm" style={{ color: "#5C6B84" }}>
+                      ({selectedWord.partOfSpeech})
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSaveWord}
+                    disabled={wordSaved}
+                    className="text-xs px-2 py-1 rounded-md whitespace-nowrap"
+                    style={
+                      wordSaved
+                        ? { backgroundColor: "#3AAFA9", color: "white" }
+                        : { backgroundColor: "#1CA7EC", color: "white" }
+                    }
+                  >
+                    {wordSaved ? "Da luu" : "Luu tu nay"}
+                  </button>
                 </div>
                 <p style={{ color: "#10233F" }}>{selectedWord.meaning}</p>
                 <p className="italic mt-1" style={{ color: "#5C6B84" }}>
